@@ -103,12 +103,12 @@ static long pps_cdev_ioctl(struct file *file,
 	case PPS_GETPARAMS:
 		dev_dbg(&pps->dev, "PPS_GETPARAMS\n");
 
-		spin_lock_irq(&pps->lock);
+		raw_spin_lock_irq(&pps->lock);
 
 		/* Get the current parameters */
 		params = pps->params;
 
-		spin_unlock_irq(&pps->lock);
+		raw_spin_unlock_irq(&pps->lock);
 
 		err = copy_to_user(uarg, &params, sizeof(struct pps_kparams));
 		if (err)
@@ -139,7 +139,7 @@ static long pps_cdev_ioctl(struct file *file,
 			return -EINVAL;
 		}
 
-		spin_lock_irq(&pps->lock);
+		raw_spin_lock_irq(&pps->lock);
 
 		/* Save the new parameters */
 		pps->params = params;
@@ -163,7 +163,7 @@ static long pps_cdev_ioctl(struct file *file,
 		pps->params.assert_off_tu.flags = 0;
 		pps->params.clear_off_tu.flags = 0;
 
-		spin_unlock_irq(&pps->lock);
+		raw_spin_unlock_irq(&pps->lock);
 
 		break;
 
@@ -190,7 +190,7 @@ static long pps_cdev_ioctl(struct file *file,
 			return err;
 
 		/* Return the fetched timestamp and save last fetched event  */
-		spin_lock_irq(&pps->lock);
+		raw_spin_lock_irq(&pps->lock);
 
 		pps->last_fetched_ev = pps->last_ev;
 
@@ -200,7 +200,7 @@ static long pps_cdev_ioctl(struct file *file,
 		fdata.info.clear_tu = pps->clear_tu;
 		fdata.info.current_mode = pps->current_mode;
 
-		spin_unlock_irq(&pps->lock);
+		raw_spin_unlock_irq(&pps->lock);
 
 		err = copy_to_user(uarg, &fdata, sizeof(struct pps_fdata));
 		if (err)
@@ -278,7 +278,7 @@ static long pps_cdev_compat_ioctl(struct file *file,
 			return err;
 
 		/* Return the fetched timestamp and save last fetched event  */
-		spin_lock_irq(&pps->lock);
+		raw_spin_lock_irq(&pps->lock);
 
 		pps->last_fetched_ev = pps->last_ev;
 
@@ -291,7 +291,7 @@ static long pps_cdev_compat_ioctl(struct file *file,
 		memcpy(&compat.info.clear_tu, &pps->clear_tu,
 				sizeof(struct pps_ktime_compat));
 
-		spin_unlock_irq(&pps->lock);
+		raw_spin_unlock_irq(&pps->lock);
 
 		return copy_to_user(uarg, &compat,
 				sizeof(struct pps_fdata_compat)) ? -EFAULT : 0;
